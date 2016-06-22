@@ -3,8 +3,10 @@ package org.usfirst.frc.team6171.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -21,14 +23,19 @@ public class Robot extends IterativeRobot {
      * used for any initialization code.
      */
 	
-	Servo serv;
-	Joystick joy;
+	Servo serv1,serv2;
+	VictorSP victor1;
+	OI oi;
+	PowerDistributionPanel pdp;
 	
     public void robotInit() {
-    	serv = new Servo(0);
-    	joy = new Joystick(0);
-    	serv.setAngle(90);
-    	SmartDashboard.putDouble("Servo angle",serv.getAngle());
+    	serv1 = new Servo(RobotMap.SERVO_PORT_ONE);
+    	serv2 = new Servo(RobotMap.SERVO_PORT_TWO);
+    	victor1 = new VictorSP(RobotMap.MOTOR_PORT_ONE);
+    	oi = new OI();
+    	pdp = new PowerDistributionPanel();
+    	SmartMaker.servoPositionCreator();
+    	SmartMaker.startCamera();
     }
     
 	/**
@@ -41,13 +48,18 @@ public class Robot extends IterativeRobot {
 	 * If using the SendableChooser make sure to add them to the chooser code above as well.
 	 */
     public void autonomousInit() {
-    	//serv.setAngle(45);
     }
 
     
     public void teleopInit()
     {
-    serv.set(90);
+    	serv1.set(0);
+    	SmartMaker.putNumber("Servo one angle:", serv1.getAngle());
+    	victor1.set(0);
+    	SmartMaker.putNumber("Motor one speed:", victor1.get());
+    	SmartMaker.putNumber("Motor one current:",pdp.getCurrent(RobotMap.MOTOR_PORT_ONE_PDP));
+    	serv2.setAngle((int)SmartMaker.servoPosition.getSelected());
+    	SmartMaker.putNumber("Servo two angle:",serv2.getAngle());
     }
     
     /**
@@ -61,13 +73,20 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-    	if(joy.getPOV()==0)serv.setAngle(0);
-    	if(joy.getPOV()==45)serv.setAngle(45);
-    	if(joy.getPOV()==90)serv.setAngle(90);
-    	if(joy.getPOV()==135)serv.setAngle(135);
-    	if(joy.getPOV()==180)serv.setAngle(180);
-    	SmartDashboard.putDouble("Servo angle",serv.getAngle());
-    	SmartDashboard.putDouble("POV angle", serv.getAngle());
+    	if(oi.getJoyPOV()==90)serv1.setAngle(0);
+    	if(oi.getJoyPOV()==45)serv1.setAngle(45);
+    	if(oi.getJoyPOV()==0)serv1.setAngle(90);
+    	if(oi.getJoyPOV()==315)serv1.setAngle(135);
+    	if(oi.getJoyPOV()==270)serv1.setAngle(180);
+    	SmartMaker.putNumber("Servo one angle:", serv1.getAngle());
+    	victor1.set(oi.getJoyLeftY());
+    	SmartMaker.putNumber("Motor one speed:", victor1.get());
+    	SmartMaker.putNumber("Motor one current:",pdp.getCurrent(RobotMap.MOTOR_PORT_ONE_PDP));
+     	//SmartMaker.putNumber("Servo two input angle:", 90);
+    	serv2.setAngle((int)SmartMaker.servoPosition.getSelected());
+    	//SmartMaker.putNumber("Selected",(int)SmartMaker.servoPosition.getSelected() );
+    	SmartMaker.putNumber("Servo two angle:",serv2.getAngle());
+    	
     }
     
     /**
